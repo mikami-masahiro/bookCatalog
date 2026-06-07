@@ -1,0 +1,16 @@
+node_modules/
+dist/
+
+# SQLite データベース（ローカル生成物）
+data/*.db
+data/*.db-wal
+data/*.db-shm
+
+# 環境変数
+.env
+.env.local
+
+# ログ・OS
+*.log
+.DS_Store
+Thumbs.db
