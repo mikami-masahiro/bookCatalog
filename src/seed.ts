@@ -2,6 +2,8 @@ import { db } from "./db/index.js";
 import { BookRepository } from "./repositories/bookRepository.js";
 import type { BookInput } from "./schemas.js";
 
+const unix = (iso: string): number => Math.floor(new Date(iso).getTime() / 1000);
+
 const samples: BookInput[] = [
 	{
 		isbn: "9784101010014",
@@ -10,7 +12,7 @@ const samples: BookInput[] = [
 		publisher: "新潮社",
 		category: "book",
 		price: 539,
-		release_date: "2026-06-01",
+		release_date: unix("2026-06-01T00:00:00Z"),
 		description: "サンプルデータ：近代日本文学の代表作。",
 	},
 	{
@@ -20,7 +22,7 @@ const samples: BookInput[] = [
 		publisher: "技術評論社",
 		category: "book",
 		price: 2980,
-		release_date: "2026-06-10",
+		release_date: unix("2026-06-10T00:00:00Z"),
 		description: "サンプルデータ：初学者向け解説書。",
 	},
 	{
@@ -30,7 +32,7 @@ const samples: BookInput[] = [
 		publisher: "サンプル出版",
 		category: "magazine",
 		price: 1200,
-		release_date: "2026-06-21",
+		release_date: unix("2026-06-21T00:00:00Z"),
 		description: "サンプルデータ：技術系月刊誌。",
 	},
 ];

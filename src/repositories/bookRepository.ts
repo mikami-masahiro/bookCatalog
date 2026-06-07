@@ -86,7 +86,7 @@ export class BookRepository {
 				`UPDATE books SET
            isbn = ?, title = ?, author = ?, publisher = ?,
            category = ?, price = ?, release_date = ?, description = ?,
-           updated_at = datetime('now')
+           updated_at = unixepoch()
          WHERE id = ?
          RETURNING *`,
 			)

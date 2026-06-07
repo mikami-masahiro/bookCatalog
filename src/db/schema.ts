@@ -11,10 +11,10 @@ export function initSchema(db: DatabaseSync): void {
       category     TEXT NOT NULL DEFAULT 'book'
                      CHECK (category IN ('book', 'magazine')),
       price        INTEGER CHECK (price IS NULL OR price >= 0),
-      release_date TEXT NOT NULL,
+      release_date INTEGER NOT NULL,
       description  TEXT,
-      created_at   TEXT NOT NULL DEFAULT (datetime('now')),
-      updated_at   TEXT NOT NULL DEFAULT (datetime('now'))
+      created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
+      updated_at   INTEGER NOT NULL DEFAULT (unixepoch())
     );
 
     CREATE INDEX IF NOT EXISTS idx_books_release_date ON books (release_date);

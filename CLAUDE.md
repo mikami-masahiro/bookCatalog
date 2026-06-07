@@ -65,9 +65,12 @@ src/index.ts        … 起動のみ。@hono/node-server で serve
 ### データモデル
 
 `books` テーブル 1 つ。`category` は `'book' | 'magazine'`、`isbn` は UNIQUE で
-雑誌など無い場合は NULL 可、`release_date` は `YYYY-MM-DD` 文字列。
+雑誌など無い場合は NULL 可。**日付・日時はすべて UNIX time（秒）の INTEGER**
+（`release_date` / `created_at` / `updated_at`）。`created_at` / `updated_at` は
+`DEFAULT (unixepoch())` で自動設定し、更新時は `update` が `unixepoch()` で上書きする。
 スキーマ変更は `src/db/schema.ts` を編集する（マイグレーション機構は未導入。
-本番データがある場合は別途移行手順が必要）。
+`CREATE TABLE IF NOT EXISTS` のため、列定義を変えた場合は既存の `data/app.db`
+を削除しないと反映されない。本番データがある場合は別途移行手順が必要）。
 
 ## コーディング規約
 
@@ -79,6 +82,14 @@ src/index.ts        … 起動のみ。@hono/node-server で serve
 - 例外：テンプレートリテラル内の SQL（`src/db/schema.ts` /
   `src/repositories/bookRepository.ts`）は **文字列の中身** なのでスペースのまま。
   ここをタブ化すると文字列内容そのものが変わるため触らない。
+
+### 日付・日時
+
+- すべて **UNIX time（秒）の整数** で扱う。`YYYY-MM-DD` などの文字列や
+  ミリ秒は使わない（API の入出力・DB 列ともに秒の整数）。
+- DB のデフォルトと現在時刻取得は SQLite の `unixepoch()`（秒）を使う。
+  `datetime('now')` など文字列を返す関数は使わない。
+- アプリ側で現在時刻が要るときは `Math.floor(Date.now() / 1000)`。
 
 ### コメント
 

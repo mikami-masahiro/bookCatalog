@@ -8,6 +8,8 @@ function setup() {
 	return createApp(db);
 }
 
+const unix = (iso: string): number => Math.floor(new Date(iso).getTime() / 1000);
+
 const sample = {
 	isbn: "9784101010014",
 	title: "こころ",
@@ -15,7 +17,7 @@ const sample = {
 	publisher: "新潮社",
 	category: "book",
 	price: 539,
-	release_date: "2026-06-01",
+	release_date: unix("2026-06-01T00:00:00Z"),
 };
 
 test("health チェックが ok を返す", async () => {
@@ -77,7 +79,7 @@ test("区分と検索で絞り込める", async () => {
 			title: "月刊サンプル 2026年7月号",
 			publisher: "サンプル出版",
 			category: "magazine",
-			release_date: "2026-06-21",
+			release_date: unix("2026-06-21T00:00:00Z"),
 		}),
 	});
 

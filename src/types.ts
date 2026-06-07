@@ -8,8 +8,8 @@ export interface Book {
 	publisher: string | null;
 	category: Category;
 	price: number | null; // 税込・円
-	release_date: string; // YYYY-MM-DD
+	release_date: number; // UNIX time（秒）
 	description: string | null;
-	created_at: string;
-	updated_at: string;
+	created_at: number; // UNIX time（秒）
+	updated_at: number; // UNIX time（秒）
 }
