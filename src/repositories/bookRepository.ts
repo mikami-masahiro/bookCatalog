@@ -1,6 +1,28 @@
 import type { DatabaseSync } from "node:sqlite";
-import type { Book } from "../types.js";
-import type { BookInput, ListQuery } from "../schemas.js";
+import type { Book, Category } from "../types.js";
+
+// リポジトリが受け取る書き込み入力。ルート層で検証済み BookInput から詰め替える
+export interface BookWriteInput {
+	isbn: string | null;
+	title: string;
+	author: string | null;
+	publisher: string | null;
+	category: Category;
+	price: number | null;
+	release_date: number;
+	description: string | null;
+}
+
+// 一覧の絞り込み条件。検証・既定値適用済みの値を受け取る
+export interface BookListQuery {
+	category?: Category;
+	publisher?: string;
+	q?: string;
+	from?: number;
+	to?: number;
+	limit: number;
+	offset: number;
+}
 
 export interface ListResult {
 	items: Book[];
@@ -10,7 +32,7 @@ export interface ListResult {
 export class BookRepository {
 	constructor(private readonly db: DatabaseSync) {}
 
-	list(query: ListQuery): ListResult {
+	list(query: BookListQuery): ListResult {
 		const where: string[] = [];
 		const params: (string | number)[] = [];
 
@@ -55,34 +77,34 @@ export class BookRepository {
 			| unknown as Book | undefined;
 	}
 
-	create(input: BookInput): Book {
+	create(input: BookWriteInput): Book {
 		return this.db
 			.prepare(`INSERT INTO books (isbn, title, author, publisher, category, price, release_date, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`)
 			.get(
-				input.isbn ?? null,
+				input.isbn,
 				input.title,
-				input.author ?? null,
-				input.publisher ?? null,
+				input.author,
+				input.publisher,
 				input.category,
-				input.price ?? null,
+				input.price,
 				input.release_date,
-				input.description ?? null,
+				input.description,
 			) as unknown as Book;
 	}
 
 	// 全項目を置き換える（部分更新ではない）
-	update(id: number, input: BookInput): Book | undefined {
+	update(id: number, input: BookWriteInput): Book | undefined {
 		return this.db
 			.prepare(`UPDATE books SET isbn = ?, title = ?, author = ?, publisher = ?, category = ?, price = ?, release_date = ?, description = ?, updated_at = unixepoch() WHERE id = ? RETURNING *`)
 			.get(
-				input.isbn ?? null,
+				input.isbn,
 				input.title,
-				input.author ?? null,
-				input.publisher ?? null,
+				input.author,
+				input.publisher,
 				input.category,
-				input.price ?? null,
+				input.price,
 				input.release_date,
-				input.description ?? null,
+				input.description,
 				id,
 			) as unknown as Book | undefined;
 	}

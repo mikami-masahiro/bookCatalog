@@ -1,12 +1,67 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { bookInputSchema, listQuerySchema } from "../schemas.js";
+import { z } from "zod";
 import { fetchBookFromOpenBd, OpenBdError } from "../services/openbd.js";
-import type { BookRepository } from "../repositories/bookRepository.js";
+import type {
+	BookRepository,
+	BookWriteInput,
+	BookListQuery,
+} from "../repositories/bookRepository.js";
+
+const bookInputSchema = z.object({
+	isbn: z.string().trim().min(1).max(20).nullish(),
+	title: z.string().trim().min(1).max(500),
+	author: z.string().trim().max(500).nullish(),
+	publisher: z.string().trim().max(500).nullish(),
+	category: z.enum(["book", "magazine"]).default("book"),
+	price: z.number().int().nonnegative().nullish(),
+	release_date: z.number().int(), // UNIX time（秒）
+	description: z.string().trim().max(5000).nullish(),
+});
+
+type BookInput = z.infer<typeof bookInputSchema>;
+
+const listQuerySchema = z.object({
+	category: z.enum(["book", "magazine"]).optional(),
+	publisher: z.string().trim().min(1).optional(), // 完全一致
+	q: z.string().trim().min(1).optional(), // タイトル・著者名の部分一致
+	from: z.coerce.number().int().optional(), // 発売日の下限（含む, UNIX time 秒）
+	to: z.coerce.number().int().optional(), // 発売日の上限（含む, UNIX time 秒）
+	limit: z.coerce.number().int().min(1).max(100).default(20),
+	offset: z.coerce.number().int().min(0).default(0),
+});
+
+type ListQuery = z.infer<typeof listQuerySchema>;
 
 function parseId(raw: string): number | null {
 	const id = Number(raw);
 	return Number.isInteger(id) && id > 0 ? id : null;
+}
+
+// 検証済みの入力をリポジトリの書き込み入力へ詰め替える（未指定は null に正規化）
+function toWriteInput(input: BookInput): BookWriteInput {
+	return {
+		isbn: input.isbn ?? null,
+		title: input.title,
+		author: input.author ?? null,
+		publisher: input.publisher ?? null,
+		category: input.category,
+		price: input.price ?? null,
+		release_date: input.release_date,
+		description: input.description ?? null,
+	};
+}
+
+function toListQuery(query: ListQuery): BookListQuery {
+	return {
+		category: query.category,
+		publisher: query.publisher,
+		q: query.q,
+		from: query.from,
+		to: query.to,
+		limit: query.limit,
+		offset: query.offset,
+	};
 }
 
 export function booksRouter(repo: BookRepository): Hono {
@@ -14,7 +69,7 @@ export function booksRouter(repo: BookRepository): Hono {
 
 	router.get("/", zValidator("query", listQuerySchema), (c) => {
 		const query = c.req.valid("query");
-		const { items, total } = repo.list(query);
+		const { items, total } = repo.list(toListQuery(query));
 		return c.json({ items, total, limit: query.limit, offset: query.offset });
 	});
 
@@ -42,7 +97,7 @@ export function booksRouter(repo: BookRepository): Hono {
 	router.post("/", zValidator("json", bookInputSchema), (c) => {
 		const input = c.req.valid("json");
 		try {
-			return c.json(repo.create(input), 201);
+			return c.json(repo.create(toWriteInput(input)), 201);
 		} catch (err) {
 			if (isUniqueViolation(err)) {
 				return c.json({ error: "同じ ISBN が既に登録されています" }, 409);
@@ -57,7 +112,7 @@ export function booksRouter(repo: BookRepository): Hono {
 
 		const input = c.req.valid("json");
 		try {
-			const book = repo.update(id, input);
+			const book = repo.update(id, toWriteInput(input));
 			if (!book) return c.json({ error: "見つかりません" }, 404);
 			return c.json(book);
 		} catch (err) {

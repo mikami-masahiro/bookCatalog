@@ -1,10 +1,10 @@
 import { db } from "./db/index.js";
 import { BookRepository } from "./repositories/bookRepository.js";
-import type { BookInput } from "./schemas.js";
+import type { BookWriteInput } from "./repositories/bookRepository.js";
 
 const unix = (iso: string): number => Math.floor(new Date(iso).getTime() / 1000);
 
-const samples: BookInput[] = [
+const samples: BookWriteInput[] = [
 	{
 		isbn: "9784101010014",
 		title: "こころ",
