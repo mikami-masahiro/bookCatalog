@@ -1,11 +1,7 @@
 import type { DatabaseSync } from "node:sqlite";
 
-/**
- * テーブルとインデックスを冪等に作成する。
- * 起動時に必ず呼び出され、存在しない場合のみ作成される。
- */
 export function initSchema(db: DatabaseSync): void {
-  db.exec(`
+	db.exec(`
     CREATE TABLE IF NOT EXISTS books (
       id           INTEGER PRIMARY KEY AUTOINCREMENT,
       isbn         TEXT UNIQUE,

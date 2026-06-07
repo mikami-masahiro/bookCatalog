@@ -69,6 +69,27 @@ src/index.ts        … 起動のみ。@hono/node-server で serve
 スキーマ変更は `src/db/schema.ts` を編集する（マイグレーション機構は未導入。
 本番データがある場合は別途移行手順が必要）。
 
+## コーディング規約
+
+### インデント
+
+- **タブで統一**。スペースインデントは使わない。
+- 表示幅は **4**（[.editorconfig](.editorconfig) と [.vscode/settings.json](.vscode/settings.json) で
+  `tab_width` / `tabSize` = 4、`insertSpaces = false` を強制）。
+- 例外：テンプレートリテラル内の SQL（`src/db/schema.ts` /
+  `src/repositories/bookRepository.ts`）は **文字列の中身** なのでスペースのまま。
+  ここをタブ化すると文字列内容そのものが変わるため触らない。
+
+### コメント
+
+- **コードから読み取れることはコメントにしない**。型名・関数名・SQL で
+  自明な「何をしているか」の説明は書かない（あれば削除する）。
+- 残すのは **コードから読み取れない情報だけ**：ドメイン知識、フォーマット、
+  単位、意図的な仕様（例：部分更新ではなく全置き換え）、回避策の理由など。
+- 形式は **`//` を優先**。`/** */`（JSDoc）は使わない。
+- 既存例：`isbn` が雑誌で null になる理由、`price` の単位、`release_date` の
+  `YYYY-MM-DD` 形式、`node:sqlite` の戻り値型による二段キャストの理由 など。
+
 ## 設定（環境変数）
 
 - `PORT` … リッスンポート（既定 3000）
