@@ -83,6 +83,12 @@ src/index.ts        … 起動のみ。@hono/node-server で serve
   `src/repositories/bookRepository.ts`）は **文字列の中身** なのでスペースのまま。
   ここをタブ化すると文字列内容そのものが変わるため触らない。
 
+### SQL
+
+- `INSERT` / `UPDATE` / `SELECT` / `DELETE` 文はできる限り **1 行で書く**
+  （テンプレートリテラルでも改行で整形しない）。`CREATE TABLE` などの DDL
+  （`src/db/schema.ts`）は対象外で、複数行のままで良い。
+
 ### 日付・日時
 
 - すべて **UNIX time（秒）の整数** で扱う。`YYYY-MM-DD` などの文字列や

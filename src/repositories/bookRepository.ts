@@ -44,11 +44,7 @@ export class BookRepository {
 
 		// node:sqlite は Record<string, SQLOutputValue> を返すため二段キャスト
 		const items = this.db
-			.prepare(
-				`SELECT * FROM books ${whereSql}
-         ORDER BY release_date DESC, id DESC
-         LIMIT ? OFFSET ?`,
-			)
+			.prepare(`SELECT * FROM books ${whereSql} ORDER BY release_date DESC, id DESC LIMIT ? OFFSET ?`)
 			.all(...params, query.limit, query.offset) as unknown as Book[];
 
 		return { items, total: countRow.c };
@@ -61,12 +57,7 @@ export class BookRepository {
 
 	create(input: BookInput): Book {
 		return this.db
-			.prepare(
-				`INSERT INTO books
-           (isbn, title, author, publisher, category, price, release_date, description)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-         RETURNING *`,
-			)
+			.prepare(`INSERT INTO books (isbn, title, author, publisher, category, price, release_date, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`)
 			.get(
 				input.isbn ?? null,
 				input.title,
@@ -82,14 +73,7 @@ export class BookRepository {
 	// 全項目を置き換える（部分更新ではない）
 	update(id: number, input: BookInput): Book | undefined {
 		return this.db
-			.prepare(
-				`UPDATE books SET
-           isbn = ?, title = ?, author = ?, publisher = ?,
-           category = ?, price = ?, release_date = ?, description = ?,
-           updated_at = unixepoch()
-         WHERE id = ?
-         RETURNING *`,
-			)
+			.prepare(`UPDATE books SET isbn = ?, title = ?, author = ?, publisher = ?, category = ?, price = ?, release_date = ?, description = ?, updated_at = unixepoch() WHERE id = ? RETURNING *`)
 			.get(
 				input.isbn ?? null,
 				input.title,
