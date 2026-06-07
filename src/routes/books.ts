@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { bookInputSchema, listQuerySchema } from "../schemas.js";
+import { fetchBookFromOpenBd, OpenBdError } from "../services/openbd.js";
 import type { BookRepository } from "../repositories/bookRepository.js";
 
 function parseId(raw: string): number | null {
@@ -15,6 +16,18 @@ export function booksRouter(repo: BookRepository): Hono {
 		const query = c.req.valid("query");
 		const { items, total } = repo.list(query);
 		return c.json({ items, total, limit: query.limit, offset: query.offset });
+	});
+
+	router.get("/openbd/:isbn", async (c) => {
+		const isbn = c.req.param("isbn");
+		try {
+			const book = await fetchBookFromOpenBd(isbn);
+			if (!book) return c.json({ error: "OpenBD に該当の書籍が見つかりません" }, 404);
+			return c.json(book);
+		} catch (err) {
+			if (err instanceof OpenBdError) return c.json({ error: err.message }, 502);
+			throw err;
+		}
 	});
 
 	router.get("/:id", (c) => {
