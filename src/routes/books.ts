@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { fetchBookFromOpenBd, OpenBdError } from "../services/openbd.js";
+import type { Book } from "../types.js";
 import type {
 	BookRepository,
 	BookWriteInput,
@@ -52,6 +53,19 @@ function toWriteInput(input: BookInput): BookWriteInput {
 	};
 }
 
+function bookToWriteInput(book: Book): BookWriteInput {
+	return {
+		isbn: book.isbn,
+		title: book.title,
+		author: book.author,
+		publisher: book.publisher,
+		category: book.category,
+		price: book.price,
+		release_date: book.release_date,
+		description: book.description,
+	};
+}
+
 function toListQuery(query: ListQuery): BookListQuery {
 	return {
 		category: query.category,
@@ -73,7 +87,7 @@ export function booksRouter(repo: BookRepository): Hono {
 		return c.json({ items, total, limit: query.limit, offset: query.offset });
 	});
 
-	router.get("/openbd/:isbn", async (c) => {
+	router.get("/openbd/load/:isbn", async (c) => {
 		const isbn = c.req.param("isbn");
 		try {
 			const book = await fetchBookFromOpenBd(isbn);
@@ -85,6 +99,19 @@ export function booksRouter(repo: BookRepository): Hono {
 		}
 	});
 
+	router.post("/openbd/import/:isbn", async (c) => {
+		const isbn = c.req.param("isbn");
+		let book;
+		try {
+			book = await fetchBookFromOpenBd(isbn);
+		} catch (err) {
+			if (err instanceof OpenBdError) return c.json({ error: err.message }, 502);
+			throw err;
+		}
+		if (!book) return c.json({ error: "OpenBD に該当の書籍が見つかりません" }, 404);
+		return c.json(repo.upsertByIsbn(bookToWriteInput(book)));
+	});
+
 	router.get("/:id", (c) => {
 		const id = parseId(c.req.param("id"));
 		if (id === null) return c.json({ error: "id が不正です" }, 400);
@@ -94,7 +121,7 @@ export function booksRouter(repo: BookRepository): Hono {
 		return c.json(book);
 	});
 
-	router.post("/", zValidator("json", bookInputSchema), (c) => {
+	router.post("/create", zValidator("json", bookInputSchema), (c) => {
 		const input = c.req.valid("json");
 		try {
 			return c.json(repo.create(toWriteInput(input)), 201);
@@ -106,7 +133,7 @@ export function booksRouter(repo: BookRepository): Hono {
 		}
 	});
 
-	router.put("/:id", zValidator("json", bookInputSchema), (c) => {
+	router.post("/update/:id", zValidator("json", bookInputSchema), (c) => {
 		const id = parseId(c.req.param("id"));
 		if (id === null) return c.json({ error: "id が不正です" }, 400);
 
@@ -123,7 +150,7 @@ export function booksRouter(repo: BookRepository): Hono {
 		}
 	});
 
-	router.delete("/:id", (c) => {
+	router.post("/delete/:id", (c) => {
 		const id = parseId(c.req.param("id"));
 		if (id === null) return c.json({ error: "id が不正です" }, 400);
 

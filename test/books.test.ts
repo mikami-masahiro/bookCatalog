@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createDatabase } from "../src/db/index.js";
 import { createApp } from "../src/app.js";
+import { BookRepository } from "../src/repositories/bookRepository.js";
 
 function setup() {
 	const db = createDatabase(":memory:");
@@ -30,7 +31,7 @@ test("health チェックが ok を返す", async () => {
 test("新刊を登録して取得できる", async () => {
 	const app = setup();
 
-	const created = await app.request("/api/books", {
+	const created = await app.request("/api/books/create", {
 		method: "POST",
 		headers: { "content-type": "application/json" },
 		body: JSON.stringify(sample),
@@ -45,7 +46,7 @@ test("新刊を登録して取得できる", async () => {
 
 test("不正な入力は 400 を返す", async () => {
 	const app = setup();
-	const res = await app.request("/api/books", {
+	const res = await app.request("/api/books/create", {
 		method: "POST",
 		headers: { "content-type": "application/json" },
 		body: JSON.stringify({ title: "" }),
@@ -58,8 +59,8 @@ test("ISBN 重複は 409 を返す", async () => {
 	const body = JSON.stringify(sample);
 	const headers = { "content-type": "application/json" };
 
-	await app.request("/api/books", { method: "POST", headers, body });
-	const dup = await app.request("/api/books", { method: "POST", headers, body });
+	await app.request("/api/books/create", { method: "POST", headers, body });
+	const dup = await app.request("/api/books/create", { method: "POST", headers, body });
 	assert.equal(dup.status, 409);
 });
 
@@ -67,12 +68,12 @@ test("区分と検索で絞り込める", async () => {
 	const app = setup();
 	const headers = { "content-type": "application/json" };
 
-	await app.request("/api/books", {
+	await app.request("/api/books/create", {
 		method: "POST",
 		headers,
 		body: JSON.stringify(sample),
 	});
-	await app.request("/api/books", {
+	await app.request("/api/books/create", {
 		method: "POST",
 		headers,
 		body: JSON.stringify({
@@ -96,15 +97,15 @@ test("更新と削除ができる", async () => {
 	const app = setup();
 	const headers = { "content-type": "application/json" };
 
-	const created = await app.request("/api/books", {
+	const created = await app.request("/api/books/create", {
 		method: "POST",
 		headers,
 		body: JSON.stringify(sample),
 	});
 	const book = (await created.json()) as { id: number };
 
-	const updated = await app.request(`/api/books/${book.id}`, {
-		method: "PUT",
+	const updated = await app.request(`/api/books/update/${book.id}`, {
+		method: "POST",
 		headers,
 		body: JSON.stringify({ ...sample, price: 600 }),
 	});
@@ -112,9 +113,38 @@ test("更新と削除ができる", async () => {
 	const updatedBook = (await updated.json()) as { price: number };
 	assert.equal(updatedBook.price, 600);
 
-	const deleted = await app.request(`/api/books/${book.id}`, { method: "DELETE" });
+	const deleted = await app.request(`/api/books/delete/${book.id}`, { method: "POST" });
 	assert.equal(deleted.status, 204);
 
 	const gone = await app.request(`/api/books/${book.id}`);
 	assert.equal(gone.status, 404);
+});
+
+test("upsertByIsbn は新規挿入し、同 ISBN で再呼び出すと同 id で上書きする", () => {
+	const db = createDatabase(":memory:");
+	const repo = new BookRepository(db);
+
+	const input = {
+		isbn: "9784101010014",
+		title: "こころ",
+		author: "夏目 漱石",
+		publisher: "新潮社",
+		category: "book" as const,
+		price: 539,
+		release_date: unix("2026-06-01T00:00:00Z"),
+		description: null,
+	};
+
+	const created = repo.upsertByIsbn(input);
+	assert.equal(created.title, "こころ");
+	assert.equal(created.price, 539);
+
+	const updated = repo.upsertByIsbn({ ...input, title: "こゝろ", price: 600 });
+	assert.equal(updated.id, created.id);
+	assert.equal(updated.title, "こゝろ");
+	assert.equal(updated.price, 600);
+	assert.equal(updated.created_at, created.created_at);
+
+	const total = repo.list({ limit: 20, offset: 0 }).total;
+	assert.equal(total, 1);
 });

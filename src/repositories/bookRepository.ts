@@ -92,6 +92,22 @@ export class BookRepository {
 			) as unknown as Book;
 	}
 
+	// ISBN を競合キーに upsert する（既存なら全項目を上書き、created_at は維持）
+	upsertByIsbn(input: BookWriteInput): Book {
+		return this.db
+			.prepare(`INSERT INTO books (isbn, title, author, publisher, category, price, release_date, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(isbn) DO UPDATE SET title = excluded.title, author = excluded.author, publisher = excluded.publisher, category = excluded.category, price = excluded.price, release_date = excluded.release_date, description = excluded.description, updated_at = unixepoch() RETURNING *`)
+			.get(
+				input.isbn,
+				input.title,
+				input.author,
+				input.publisher,
+				input.category,
+				input.price,
+				input.release_date,
+				input.description,
+			) as unknown as Book;
+	}
+
 	// 全項目を置き換える（部分更新ではない）
 	update(id: number, input: BookWriteInput): Book | undefined {
 		return this.db
