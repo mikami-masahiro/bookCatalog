@@ -1,0 +1,35 @@
+{
+	"name": "book-catalog-client",
+	"version": "0.1.0",
+	"description": "書籍・雑誌の新刊情報 API クライアント（React SPA / ブラウザ + Electron）",
+	"private": true,
+	"type": "module",
+	"main": "dist-electron/main.js",
+	"scripts": {
+		"dev": "vite",
+		"build": "npm run typecheck && vite build",
+		"preview": "vite preview",
+		"typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
+		"gen:api": "openapi-typescript ../server/openapi.json -o src/api/schema.d.ts",
+		"electron:dev": "cross-env TARGET=electron vite",
+		"electron:build": "cross-env TARGET=electron vite build && electron-builder"
+	},
+	"dependencies": {
+		"openapi-fetch": "^0.17.0",
+		"react": "^19.2.7",
+		"react-dom": "^19.2.7"
+	},
+	"devDependencies": {
+		"@types/node": "^25.9.3",
+		"@types/react": "^19.2.17",
+		"@types/react-dom": "^19.2.3",
+		"@vitejs/plugin-react": "^6.0.2",
+		"cross-env": "^10.1.0",
+		"electron": "^42.4.0",
+		"electron-builder": "^26.15.3",
+		"openapi-typescript": "^7.13.0",
+		"typescript": "^6.0.3",
+		"vite": "^8.0.16",
+		"vite-plugin-electron": "^1.0.4"
+	}
+}

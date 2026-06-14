@@ -1,10 +1,14 @@
 node_modules/
 dist/
 
+# Vite / Electron ビルド成果物（client）
+client/dist-electron/
+client/release/
+
 # SQLite データベース（ローカル生成物）
-data/*.db
-data/*.db-wal
-data/*.db-shm
+**/data/*.db
+**/data/*.db-wal
+**/data/*.db-shm
 
 # 環境変数
 .env

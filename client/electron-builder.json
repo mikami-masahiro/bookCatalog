@@ -1,0 +1,11 @@
+{
+	"appId": "jp.bookcatalog.client",
+	"productName": "Book Catalog",
+	"directories": {
+		"output": "release"
+	},
+	"files": ["dist/**", "dist-electron/**"],
+	"win": {
+		"target": ["nsis", "portable"]
+	}
+}

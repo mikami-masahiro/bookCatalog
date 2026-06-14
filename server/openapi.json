@@ -1,0 +1,485 @@
+{
+	"openapi": "3.0.0",
+	"info": {
+		"title": "Book Catalog API",
+		"version": "0.1.0"
+	},
+	"components": {
+		"schemas": {
+			"Book": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "integer"
+					},
+					"isbn": {
+						"type": "string",
+						"nullable": true
+					},
+					"title": {
+						"type": "string"
+					},
+					"author": {
+						"type": "string",
+						"nullable": true
+					},
+					"publisher": {
+						"type": "string",
+						"nullable": true
+					},
+					"category": {
+						"type": "string",
+						"enum": [
+							"book",
+							"magazine"
+						]
+					},
+					"price": {
+						"type": "integer",
+						"nullable": true
+					},
+					"release_date": {
+						"type": "integer"
+					},
+					"description": {
+						"type": "string",
+						"nullable": true
+					},
+					"created_at": {
+						"type": "integer"
+					},
+					"updated_at": {
+						"type": "integer"
+					}
+				},
+				"required": [
+					"id",
+					"isbn",
+					"title",
+					"author",
+					"publisher",
+					"category",
+					"price",
+					"release_date",
+					"description",
+					"created_at",
+					"updated_at"
+				]
+			},
+			"BookListResult": {
+				"type": "object",
+				"properties": {
+					"items": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Book"
+						}
+					},
+					"total": {
+						"type": "integer"
+					},
+					"limit": {
+						"type": "integer"
+					},
+					"offset": {
+						"type": "integer"
+					}
+				},
+				"required": [
+					"items",
+					"total",
+					"limit",
+					"offset"
+				]
+			},
+			"Error": {
+				"type": "object",
+				"properties": {
+					"error": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"error"
+				]
+			},
+			"BookInput": {
+				"type": "object",
+				"properties": {
+					"isbn": {
+						"type": "string",
+						"nullable": true,
+						"minLength": 1,
+						"maxLength": 20
+					},
+					"title": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 500
+					},
+					"author": {
+						"type": "string",
+						"nullable": true,
+						"maxLength": 500
+					},
+					"publisher": {
+						"type": "string",
+						"nullable": true,
+						"maxLength": 500
+					},
+					"category": {
+						"type": "string",
+						"enum": [
+							"book",
+							"magazine"
+						],
+						"default": "book"
+					},
+					"price": {
+						"type": "integer",
+						"nullable": true,
+						"minimum": 0
+					},
+					"release_date": {
+						"type": "integer"
+					},
+					"description": {
+						"type": "string",
+						"nullable": true,
+						"maxLength": 5000
+					}
+				},
+				"required": [
+					"title",
+					"release_date"
+				]
+			}
+		},
+		"parameters": {}
+	},
+	"paths": {
+		"/health": {
+			"get": {
+				"responses": {
+					"200": {
+						"description": "ヘルスチェック",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"status": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"status"
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/books": {
+			"get": {
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"enum": [
+								"book",
+								"magazine"
+							]
+						},
+						"required": false,
+						"name": "category",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"minLength": 1
+						},
+						"required": false,
+						"name": "publisher",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"minLength": 1
+						},
+						"required": false,
+						"name": "q",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "integer",
+							"nullable": true
+						},
+						"required": false,
+						"name": "from",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "integer",
+							"nullable": true
+						},
+						"required": false,
+						"name": "to",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 100,
+							"default": 20
+						},
+						"required": false,
+						"name": "limit",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "integer",
+							"nullable": true,
+							"minimum": 0,
+							"default": 0
+						},
+						"required": false,
+						"name": "offset",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "一覧",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BookListResult"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/books/openbd/{isbn}": {
+			"get": {
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"example": "9784873119045"
+						},
+						"required": true,
+						"name": "isbn",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OpenBD から取得（DB 未保存）",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Book"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "該当なし",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"502": {
+						"description": "OpenBD 連携エラー",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/books/{id}": {
+			"get": {
+				"parameters": [
+					{
+						"schema": {
+							"type": "integer",
+							"minimum": 0,
+							"exclusiveMinimum": true,
+							"example": 1
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "1 件取得",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Book"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "見つかりません",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/books/create": {
+			"post": {
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/BookInput"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "新規登録",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Book"
+								}
+							}
+						}
+					},
+					"409": {
+						"description": "ISBN 重複",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/books/update/{id}": {
+			"post": {
+				"parameters": [
+					{
+						"schema": {
+							"type": "integer",
+							"minimum": 0,
+							"exclusiveMinimum": true,
+							"example": 1
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/BookInput"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "更新（全項目置き換え）",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Book"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "見つかりません",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"409": {
+						"description": "ISBN 重複",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/books/delete/{id}": {
+			"post": {
+				"parameters": [
+					{
+						"schema": {
+							"type": "integer",
+							"minimum": 0,
+							"exclusiveMinimum": true,
+							"example": 1
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "削除"
+					},
+					"404": {
+						"description": "見つかりません",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

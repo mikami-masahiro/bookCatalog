@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const d=require\\('./openapi.json'\\); console.log\\('paths:', Object.keys\\(d.paths\\)\\); console.log\\('schemas:', Object.keys\\(d.components?.schemas||{}\\)\\);\")",
+      "Bash(npm run *)",
+      "Bash(npm test *)"
+    ]
+  }
+}
