@@ -6,6 +6,7 @@
 	},
 	"files": ["dist/**", "dist-electron/**"],
 	"win": {
-		"target": ["nsis", "portable"]
+		"target": ["nsis", "portable"],
+		"icon": "build/icon.ico"
 	}
 }

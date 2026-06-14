@@ -7,7 +7,8 @@ export type BookInput = components["schemas"]["BookInput"];
 export type BookListResult = components["schemas"]["BookListResult"];
 export type ListQuery = NonNullable<paths["/api/books"]["get"]["parameters"]["query"]>;
 
-const client = createClient<paths>({ baseUrl: API_BASE_URL });
+// 設定画面から接続先を切り替えられるよう、クライアントは再生成可能にする。
+let client = createClient<paths>({ baseUrl: API_BASE_URL });
 
 // サーバーは失敗時 { error: string } を返す。状態コード付きで投げ直す。
 export class ApiError extends Error {
@@ -39,6 +40,11 @@ function unwrap<T>(result: { data?: T; error?: unknown; response: Response }): T
 }
 
 export const api = {
+	// 接続先サーバー URL を切り替える（設定画面から）。空文字なら既定に戻す。
+	configure(serverUrl: string): void {
+		client = createClient<paths>({ baseUrl: serverUrl || API_BASE_URL });
+	},
+
 	health(): Promise<{ status: string }> {
 		return client.GET("/health").then(unwrap);
 	},

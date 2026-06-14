@@ -10,6 +10,9 @@ function createWindow(): void {
 	const win = new BrowserWindow({
 		width: 1100,
 		height: 800,
+		autoHideMenuBar: true,
+		// 開発時のウィンドウアイコン（パッケージ版の exe アイコンは electron-builder が付与）
+		icon: path.join(import.meta.dirname, "../build/icon.ico"),
 		webPreferences: {
 			preload: path.join(import.meta.dirname, "preload.mjs"),
 			contextIsolation: true,
