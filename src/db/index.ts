@@ -1,7 +1,11 @@
 import { DatabaseSync } from "node:sqlite";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { initSchema } from "./schema.js";
+
+export function initSchema(db: DatabaseSync): void {
+	const sql = readFileSync(new URL("./schema.sql", import.meta.url), "utf8");
+	db.exec(sql);
+}
 
 export function createDatabase(path: string): DatabaseSync {
 	if (path !== ":memory:") {
