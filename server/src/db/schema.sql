@@ -4,8 +4,8 @@ CREATE TABLE IF NOT EXISTS books (
   title        TEXT NOT NULL,
   author       TEXT,
   publisher    TEXT,
-  category     TEXT NOT NULL DEFAULT 'book'
-                 CHECK (category IN ('book', 'magazine')),
+  category     TEXT,
+  -- 生の C コード（日本の書籍分類コード, 4 桁。例 '0093'）。不明な場合は NULL
   price        INTEGER CHECK (price IS NULL OR price >= 0),
   release_date INTEGER NOT NULL,
   description  TEXT,

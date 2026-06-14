@@ -1,5 +1,5 @@
 import type { DatabaseSync } from "node:sqlite";
-import type { Book, Category } from "../types.js";
+import type { Book } from "../types.js";
 
 // リポジトリが受け取る書き込み入力。ルート層で検証済み BookInput から詰め替える
 export interface BookWriteInput {
@@ -7,7 +7,7 @@ export interface BookWriteInput {
 	title: string;
 	author: string | null;
 	publisher: string | null;
-	category: Category;
+	category: string | null;
 	price: number | null;
 	release_date: number;
 	description: string | null;
@@ -15,7 +15,7 @@ export interface BookWriteInput {
 
 // 一覧の絞り込み条件。検証・既定値適用済みの値を受け取る
 export interface BookListQuery {
-	category?: Category;
+	category?: string;
 	publisher?: string;
 	q?: string;
 	from?: number;

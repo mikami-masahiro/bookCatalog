@@ -43,7 +43,7 @@ export function mapRecordToBook(record: OpenBdRecord, requestedIsbn: string): Bo
 		title: summary.title ?? "",
 		author: summary.author || null,
 		publisher: summary.publisher || null,
-		category: "book",
+		category: extractCCode(record.onix),
 		price: extractPrice(record.onix),
 		release_date: parsePubdate(summary.pubdate) ?? 0,
 		description: extractDescription(record.onix),
@@ -60,6 +60,14 @@ function extractPrice(onix: any): number | null {
 		if (Number.isFinite(amount)) return Math.round(amount);
 	}
 	return null;
+}
+
+// C コード（日本の書籍分類コード, 4 桁）。ONIX Subject の SubjectSchemeIdentifier "78" が C コード
+function extractCCode(onix: any): string | null {
+	const subjects = onix?.DescriptiveDetail?.Subject;
+	if (!Array.isArray(subjects)) return null;
+	const code = subjects.find((s: any) => s?.SubjectSchemeIdentifier === "78")?.SubjectCode;
+	return code ? String(code) : null;
 }
 
 function extractDescription(onix: any): string | null {

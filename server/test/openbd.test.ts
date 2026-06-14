@@ -11,6 +11,12 @@ const record = {
 		pubdate: "20040101",
 	},
 	onix: {
+		DescriptiveDetail: {
+			Subject: [
+				{ SubjectSchemeIdentifier: "20", SubjectHeadingText: "キーワード" },
+				{ SubjectSchemeIdentifier: "78", SubjectCode: "0093" },
+			],
+		},
 		CollateralDetail: {
 			TextContent: [{ TextType: "03", Text: "あらすじ。" }],
 		},
@@ -28,7 +34,7 @@ test("OpenBD レコードを Book 形状に変換する", () => {
 	assert.equal(book.title, "こころ");
 	assert.equal(book.author, "夏目漱石／著");
 	assert.equal(book.publisher, "新潮社");
-	assert.equal(book.category, "book");
+	assert.equal(book.category, "0093");
 	assert.equal(book.price, 539);
 	assert.equal(book.description, "あらすじ。");
 	assert.equal(book.release_date, Math.floor(Date.UTC(2004, 0, 1) / 1000));
@@ -44,4 +50,9 @@ test("価格・内容が無い場合は null", () => {
 	const book = mapRecordToBook({ summary: { title: "無" } }, "x");
 	assert.equal(book.price, null);
 	assert.equal(book.description, null);
+});
+
+test("C コードが無い場合は category が null", () => {
+	const book = mapRecordToBook({ summary: { title: "無" } }, "x");
+	assert.equal(book.category, null);
 });

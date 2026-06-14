@@ -10,7 +10,7 @@ const samples: BookWriteInput[] = [
 		title: "こころ",
 		author: "夏目 漱石",
 		publisher: "新潮社",
-		category: "book",
+		category: "0093", // C コード：一般・単行本・日本文学（小説）
 		price: 539,
 		release_date: unix("2026-06-01T00:00:00Z"),
 		description: "サンプルデータ：近代日本文学の代表作。",
@@ -20,7 +20,7 @@ const samples: BookWriteInput[] = [
 		title: "プログラミング入門",
 		author: "情報 太郎",
 		publisher: "技術評論社",
-		category: "book",
+		category: "3055", // C コード：専門・全集／双書・電子通信
 		price: 2980,
 		release_date: unix("2026-06-10T00:00:00Z"),
 		description: "サンプルデータ：初学者向け解説書。",
@@ -30,7 +30,7 @@ const samples: BookWriteInput[] = [
 		title: "月刊テックマガジン 2026年7月号",
 		author: null,
 		publisher: "サンプル出版",
-		category: "magazine",
+		category: null, // 雑誌は C コードを持たない
 		price: 1200,
 		release_date: unix("2026-06-21T00:00:00Z"),
 		description: "サンプルデータ：技術系月刊誌。",

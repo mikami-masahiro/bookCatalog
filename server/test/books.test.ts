@@ -16,7 +16,7 @@ const sample = {
 	title: "こころ",
 	author: "夏目 漱石",
 	publisher: "新潮社",
-	category: "book",
+	category: "0093",
 	price: 539,
 	release_date: unix("2026-06-01T00:00:00Z"),
 };
@@ -79,12 +79,12 @@ test("区分と検索で絞り込める", async () => {
 		body: JSON.stringify({
 			title: "月刊サンプル 2026年7月号",
 			publisher: "サンプル出版",
-			category: "magazine",
+			category: "0079",
 			release_date: unix("2026-06-21T00:00:00Z"),
 		}),
 	});
 
-	const onlyMagazine = await app.request("/api/books?category=magazine");
+	const onlyMagazine = await app.request("/api/books?category=0079");
 	const result = (await onlyMagazine.json()) as { total: number };
 	assert.equal(result.total, 1);
 
@@ -129,7 +129,7 @@ test("upsertByIsbn は新規挿入し、同 ISBN で再呼び出すと同 id で
 		title: "こころ",
 		author: "夏目 漱石",
 		publisher: "新潮社",
-		category: "book" as const,
+		category: "0093",
 		price: 539,
 		release_date: unix("2026-06-01T00:00:00Z"),
 		description: null,

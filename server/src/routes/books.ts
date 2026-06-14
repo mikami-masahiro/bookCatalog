@@ -6,8 +6,6 @@ import type {
 	BookListQuery,
 } from "../repositories/bookRepository.js";
 
-const categorySchema = z.enum(["book", "magazine"]);
-
 // books テーブルの行に対応するレスポンス形状（src/types.ts の Book と一致させる）
 const bookSchema = z
 	.object({
@@ -16,7 +14,7 @@ const bookSchema = z
 		title: z.string(),
 		author: z.string().nullable(),
 		publisher: z.string().nullable(),
-		category: categorySchema,
+		category: z.string().nullable(), // 生の C コード（4 桁。例 "0093"）
 		price: z.number().int().nullable(), // 税込・円
 		release_date: z.number().int(), // UNIX time（秒）
 		description: z.string().nullable(),
@@ -31,7 +29,7 @@ const bookInputSchema = z
 		title: z.string().trim().min(1).max(500),
 		author: z.string().trim().max(500).nullish(),
 		publisher: z.string().trim().max(500).nullish(),
-		category: categorySchema.default("book"),
+		category: z.string().trim().max(20).nullish(), // 生の C コード（4 桁）
 		price: z.number().int().nonnegative().nullish(),
 		release_date: z.number().int(), // UNIX time（秒）
 		description: z.string().trim().max(5000).nullish(),
@@ -41,7 +39,7 @@ const bookInputSchema = z
 type BookInput = z.infer<typeof bookInputSchema>;
 
 const listQuerySchema = z.object({
-	category: categorySchema.optional(),
+	category: z.string().trim().min(1).optional(), // C コード完全一致
 	publisher: z.string().trim().min(1).optional(), // 完全一致
 	q: z.string().trim().min(1).optional(), // タイトル・著者名の部分一致
 	from: z.coerce.number().int().optional(), // 発売日の下限（含む, UNIX time 秒）
@@ -78,7 +76,7 @@ function toWriteInput(input: BookInput): BookWriteInput {
 		title: input.title,
 		author: input.author ?? null,
 		publisher: input.publisher ?? null,
-		category: input.category,
+		category: input.category ?? null,
 		price: input.price ?? null,
 		release_date: input.release_date,
 		description: input.description ?? null,

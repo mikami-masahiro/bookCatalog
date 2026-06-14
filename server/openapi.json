@@ -29,10 +29,7 @@
 					},
 					"category": {
 						"type": "string",
-						"enum": [
-							"book",
-							"magazine"
-						]
+						"nullable": true
 					},
 					"price": {
 						"type": "integer",
@@ -129,11 +126,8 @@
 					},
 					"category": {
 						"type": "string",
-						"enum": [
-							"book",
-							"magazine"
-						],
-						"default": "book"
+						"nullable": true,
+						"maxLength": 20
 					},
 					"price": {
 						"type": "integer",
@@ -188,10 +182,7 @@
 					{
 						"schema": {
 							"type": "string",
-							"enum": [
-								"book",
-								"magazine"
-							]
+							"minLength": 1
 						},
 						"required": false,
 						"name": "category",
